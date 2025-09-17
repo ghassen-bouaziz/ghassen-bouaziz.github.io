@@ -1,0 +1,38 @@
+{
+  "name": "ghassen-bouaziz-portfolio",
+  "version": "1.0.0",
+  "description": "Senior Mobile Developer Portfolio - Ghassen Bouaziz",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js",
+    "build:github": "MIXPANEL_PROJECT_TOKEN=${{ secrets.MIXPANEL_PROJECT_TOKEN }} GTM_CONTAINER_ID=${{ secrets.GTM_CONTAINER_ID }} GA4_MEASUREMENT_ID=${{ secrets.GA4_MEASUREMENT_ID }} node build.js",
+    "dev": "npm run build && python3 -m http.server 8000",
+    "start": "python3 -m http.server 8000",
+    "deploy": "npm run build && git add . && git commit -m 'Deploy with secrets' && git push",
+    "deploy:github": "npm run build && git add . && git commit -m 'Deploy to GitHub Pages' && git push origin main",
+    "test": "echo 'No tests specified' && exit 0"
+  },
+  "keywords": [
+    "portfolio",
+    "mobile-developer",
+    "react-native",
+    "flutter",
+    "full-stack",
+    "javascript",
+    "html",
+    "css"
+  ],
+  "author": "Ghassen Bouaziz",
+  "license": "MIT",
+  "devDependencies": {
+    "dotenv": "^16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/portfolio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/portfolio/issues"
+  },
+  "homepage": "https://your-username.github.io/portfolio"
+}
