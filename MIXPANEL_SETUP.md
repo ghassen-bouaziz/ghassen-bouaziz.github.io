@@ -44,6 +44,8 @@ console.log('Mixpanel loaded:', typeof mixpanel !== 'undefined');
 - **Properties**: User ID, country, device, browser, etc.
 - **Trigger**: Page load
 
+> **📊 Enhanced Tracking**: Your portfolio now tracks **100+ user properties** including comprehensive device info, location data, engagement metrics, and real-time behavior analytics. See `COMPREHENSIVE_MIXPANEL_USER_TRACKING.md` for complete details.
+
 ### 2. Page Views
 - **Event**: `Page View`
 - **Properties**: Page title, URL, load time

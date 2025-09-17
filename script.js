@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initCVDownload();
     initEventTracking();
     initUserIdentity();
+    initUserBehaviorTracking();
 });
 
 // Navigation functionality
@@ -378,8 +379,8 @@ async function initUserIdentity() {
     let userId = getUserId();
     let sessionId = getSessionId();
     
-    // Get country information
-    const country = await getCountry();
+    // Get comprehensive user information
+    const userInfo = await getComprehensiveUserInfo();
     
     // Set user properties
     const userProperties = {
@@ -391,7 +392,42 @@ async function initUserIdentity() {
         'user_screen_resolution': `${screen.width}x${screen.height}`,
         'user_browser': getBrowserInfo(),
         'user_os': getOperatingSystem(),
-        'user_country': country
+        'user_country': userInfo.country,
+        'user_city': userInfo.city,
+        'user_region': userInfo.region,
+        'user_ip': userInfo.ip,
+        'user_isp': userInfo.isp,
+        'user_connection_type': getConnectionType(),
+        'user_color_depth': screen.colorDepth,
+        'user_pixel_ratio': window.devicePixelRatio,
+        'user_viewport_size': `${window.innerWidth}x${window.innerHeight}`,
+        'user_available_screen': `${screen.availWidth}x${screen.availHeight}`,
+        'user_orientation': getScreenOrientation(),
+        'user_touch_support': 'ontouchstart' in window,
+        'user_geolocation_support': 'geolocation' in navigator,
+        'user_notification_support': 'Notification' in window,
+        'user_service_worker_support': 'serviceWorker' in navigator,
+        'user_webgl_support': !!document.createElement('canvas').getContext('webgl'),
+        'user_webp_support': getWebPSupport(),
+        'user_do_not_track': navigator.doNotTrack,
+        'user_cookie_enabled': navigator.cookieEnabled,
+        'user_java_enabled': navigator.javaEnabled ? navigator.javaEnabled() : false,
+        'user_platform': navigator.platform,
+        'user_hardware_concurrency': navigator.hardwareConcurrency,
+        'user_max_touch_points': navigator.maxTouchPoints,
+        'user_memory': navigator.deviceMemory,
+        'user_connection_effective_type': getConnectionEffectiveType(),
+        'user_connection_downlink': getConnectionDownlink(),
+        'user_connection_rtt': getConnectionRTT(),
+        'user_session_start': new Date().toISOString(),
+        'user_session_duration': 0,
+        'user_page_views': 1,
+        'user_events_count': 0,
+        'user_last_activity': new Date().toISOString(),
+        'user_engagement_score': 0,
+        'user_bounce_risk': 'low',
+        'user_interest_categories': [],
+        'user_behavior_pattern': 'new_visitor'
     };
     
     // Set user ID in dataLayer
@@ -417,7 +453,10 @@ async function initUserIdentity() {
                 'custom_parameter_6': 'user_screen_resolution',
                 'custom_parameter_7': 'user_browser',
                 'custom_parameter_8': 'user_os',
-                'custom_parameter_9': 'user_country'
+                'custom_parameter_9': 'user_country',
+                'custom_parameter_10': 'user_city',
+                'custom_parameter_11': 'user_connection_type',
+                'custom_parameter_12': 'user_engagement_score'
             }
         });
     }
@@ -425,22 +464,112 @@ async function initUserIdentity() {
     // Track user identification event
     trackEvent('user_identification', 'User', 'User Identified', `User: ${userId}`, 1);
     
-    // Set user properties in Mixpanel
+    // Set comprehensive user properties in Mixpanel
     if (typeof mixpanel !== 'undefined') {
         mixpanel.identify(userId);
         mixpanel.people.set({
+            // Basic Identity
             '$first_name': 'Portfolio',
             '$last_name': 'Visitor',
+            '$email': null,
+            '$phone': null,
+            '$created': new Date().toISOString(),
+            '$last_seen': new Date().toISOString(),
+            
+            // User Classification
             'User Type': 'portfolio_visitor',
+            'User Status': 'active',
+            'User Segment': 'anonymous_visitor',
+            'User Cohort': 'new_visitor',
+            
+            // Traffic & Source
             'Traffic Source': userProperties.user_source,
+            'Referrer': document.referrer || 'direct',
+            'UTM Source': getUrlParameter('utm_source'),
+            'UTM Medium': getUrlParameter('utm_medium'),
+            'UTM Campaign': getUrlParameter('utm_campaign'),
+            'UTM Term': getUrlParameter('utm_term'),
+            'UTM Content': getUrlParameter('utm_content'),
+            
+            // Device & Browser
             'Device Type': userProperties.user_device,
-            'Language': userProperties.user_language,
-            'Timezone': userProperties.user_timezone,
-            'Screen Resolution': userProperties.user_screen_resolution,
+            'Device Category': getDeviceCategory(),
             'Browser': userProperties.user_browser,
+            'Browser Version': getBrowserVersion(),
             'Operating System': userProperties.user_os,
+            'OS Version': getOSVersion(),
+            'Platform': userProperties.user_platform,
+            
+            // Screen & Display
+            'Screen Resolution': userProperties.user_screen_resolution,
+            'Viewport Size': userProperties.user_viewport_size,
+            'Available Screen': userProperties.user_available_screen,
+            'Color Depth': userProperties.user_color_depth,
+            'Pixel Ratio': userProperties.user_pixel_ratio,
+            'Screen Orientation': userProperties.user_orientation,
+            
+            // Location & Network
             'Country': userProperties.user_country,
-            'First Visit': new Date().toISOString()
+            'City': userProperties.user_city,
+            'Region': userProperties.user_region,
+            'IP Address': userProperties.user_ip,
+            'ISP': userProperties.user_isp,
+            'Timezone': userProperties.user_timezone,
+            'Language': userProperties.user_language,
+            'Locale': navigator.language,
+            'Languages': navigator.languages ? navigator.languages.join(',') : navigator.language,
+            
+            // Connection & Performance
+            'Connection Type': userProperties.user_connection_type,
+            'Connection Effective Type': userProperties.user_connection_effective_type,
+            'Connection Downlink': userProperties.user_connection_downlink,
+            'Connection RTT': userProperties.user_connection_rtt,
+            'Hardware Concurrency': userProperties.user_hardware_concurrency,
+            'Device Memory': userProperties.user_memory,
+            'Max Touch Points': userProperties.user_max_touch_points,
+            
+            // Capabilities & Features
+            'Touch Support': userProperties.user_touch_support,
+            'Geolocation Support': userProperties.user_geolocation_support,
+            'Notification Support': userProperties.user_notification_support,
+            'Service Worker Support': userProperties.user_service_worker_support,
+            'WebGL Support': userProperties.user_webgl_support,
+            'WebP Support': userProperties.user_webp_support,
+            'Java Enabled': userProperties.user_java_enabled,
+            'Cookie Enabled': userProperties.user_cookie_enabled,
+            'Do Not Track': userProperties.user_do_not_track,
+            
+            // Session & Engagement
+            'First Visit': new Date().toISOString(),
+            'Last Visit': new Date().toISOString(),
+            'Session Start': userProperties.user_session_start,
+            'Session Duration': userProperties.user_session_duration,
+            'Page Views': userProperties.user_page_views,
+            'Events Count': userProperties.user_events_count,
+            'Last Activity': userProperties.user_last_activity,
+            'Engagement Score': userProperties.user_engagement_score,
+            'Bounce Risk': userProperties.user_bounce_risk,
+            'Behavior Pattern': userProperties.user_behavior_pattern,
+            
+            // Interest & Behavior
+            'Interest Categories': userProperties.user_interest_categories,
+            'Preferred Language': userProperties.user_language,
+            'Time of Day': new Date().getHours(),
+            'Day of Week': new Date().getDay(),
+            'Visit Frequency': 'first_time',
+            'Returning User': false,
+            'Mobile User': userProperties.user_device === 'mobile',
+            'Desktop User': userProperties.user_device === 'desktop',
+            'Tablet User': userProperties.user_device === 'tablet'
+        });
+        
+        // Track comprehensive user profile creation
+        mixpanel.track('User Profile Created', {
+            'user_id': userId,
+            'session_id': sessionId,
+            'profile_completeness': '100%',
+            'data_points_collected': Object.keys(userProperties).length,
+            'timestamp': new Date().toISOString()
         });
     }
 }
@@ -506,82 +635,387 @@ function getOperatingSystem() {
     return 'Other';
 }
 
-async function getCountry() {
+// Comprehensive user information gathering
+async function getComprehensiveUserInfo() {
     try {
-        // Try to get country from IP geolocation API
+        // Try to get comprehensive info from IP geolocation API
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
-        return data.country_name || data.country_code || 'Unknown';
+        return {
+            country: data.country_name || data.country_code || 'Unknown',
+            city: data.city || 'Unknown',
+            region: data.region || data.region_code || 'Unknown',
+            ip: data.ip || 'Unknown',
+            isp: data.org || 'Unknown',
+            timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+            latitude: data.latitude || null,
+            longitude: data.longitude || null,
+            postal: data.postal || null,
+            country_code: data.country_code || null,
+            region_code: data.region_code || null
+        };
     } catch (error) {
-        // Fallback to timezone-based country detection
+        // Fallback to timezone-based detection
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const countryMap = {
-            'America/New_York': 'United States',
-            'America/Chicago': 'United States',
-            'America/Denver': 'United States',
-            'America/Los_Angeles': 'United States',
-            'Europe/London': 'United Kingdom',
-            'Europe/Paris': 'France',
-            'Europe/Berlin': 'Germany',
-            'Europe/Rome': 'Italy',
-            'Europe/Madrid': 'Spain',
-            'Europe/Amsterdam': 'Netherlands',
-            'Europe/Brussels': 'Belgium',
-            'Europe/Zurich': 'Switzerland',
-            'Europe/Vienna': 'Austria',
-            'Europe/Stockholm': 'Sweden',
-            'Europe/Oslo': 'Norway',
-            'Europe/Copenhagen': 'Denmark',
-            'Europe/Helsinki': 'Finland',
-            'Europe/Warsaw': 'Poland',
-            'Europe/Prague': 'Czech Republic',
-            'Europe/Budapest': 'Hungary',
-            'Europe/Bucharest': 'Romania',
-            'Europe/Sofia': 'Bulgaria',
-            'Europe/Athens': 'Greece',
-            'Europe/Lisbon': 'Portugal',
-            'Europe/Dublin': 'Ireland',
-            'Asia/Tokyo': 'Japan',
-            'Asia/Shanghai': 'China',
-            'Asia/Seoul': 'South Korea',
-            'Asia/Singapore': 'Singapore',
-            'Asia/Hong_Kong': 'Hong Kong',
-            'Asia/Taipei': 'Taiwan',
-            'Asia/Bangkok': 'Thailand',
-            'Asia/Jakarta': 'Indonesia',
-            'Asia/Kuala_Lumpur': 'Malaysia',
-            'Asia/Manila': 'Philippines',
-            'Asia/Ho_Chi_Minh': 'Vietnam',
-            'Asia/Kolkata': 'India',
-            'Asia/Dubai': 'United Arab Emirates',
-            'Asia/Riyadh': 'Saudi Arabia',
-            'Asia/Tehran': 'Iran',
-            'Asia/Jerusalem': 'Israel',
-            'Asia/Istanbul': 'Turkey',
-            'Africa/Cairo': 'Egypt',
-            'Africa/Johannesburg': 'South Africa',
-            'Africa/Lagos': 'Nigeria',
-            'Africa/Casablanca': 'Morocco',
-            'Africa/Tunis': 'Tunisia',
-            'Africa/Algiers': 'Algeria',
-            'Australia/Sydney': 'Australia',
-            'Australia/Melbourne': 'Australia',
-            'Australia/Perth': 'Australia',
-            'Pacific/Auckland': 'New Zealand',
-            'America/Toronto': 'Canada',
-            'America/Vancouver': 'Canada',
-            'America/Montreal': 'Canada',
-            'America/Sao_Paulo': 'Brazil',
-            'America/Argentina/Buenos_Aires': 'Argentina',
-            'America/Mexico_City': 'Mexico',
-            'America/Bogota': 'Colombia',
-            'America/Lima': 'Peru',
-            'America/Santiago': 'Chile',
-            'America/Caracas': 'Venezuela'
+            'America/New_York': { country: 'United States', region: 'New York' },
+            'America/Chicago': { country: 'United States', region: 'Illinois' },
+            'America/Denver': { country: 'United States', region: 'Colorado' },
+            'America/Los_Angeles': { country: 'United States', region: 'California' },
+            'Europe/London': { country: 'United Kingdom', region: 'England' },
+            'Europe/Paris': { country: 'France', region: 'Île-de-France' },
+            'Europe/Berlin': { country: 'Germany', region: 'Berlin' },
+            'Europe/Rome': { country: 'Italy', region: 'Lazio' },
+            'Europe/Madrid': { country: 'Spain', region: 'Madrid' },
+            'Europe/Amsterdam': { country: 'Netherlands', region: 'North Holland' },
+            'Europe/Brussels': { country: 'Belgium', region: 'Brussels' },
+            'Europe/Zurich': { country: 'Switzerland', region: 'Zurich' },
+            'Europe/Vienna': { country: 'Austria', region: 'Vienna' },
+            'Europe/Stockholm': { country: 'Sweden', region: 'Stockholm' },
+            'Europe/Oslo': { country: 'Norway', region: 'Oslo' },
+            'Europe/Copenhagen': { country: 'Denmark', region: 'Copenhagen' },
+            'Europe/Helsinki': { country: 'Finland', region: 'Uusimaa' },
+            'Europe/Warsaw': { country: 'Poland', region: 'Masovian' },
+            'Europe/Prague': { country: 'Czech Republic', region: 'Prague' },
+            'Europe/Budapest': { country: 'Hungary', region: 'Budapest' },
+            'Europe/Bucharest': { country: 'Romania', region: 'Bucharest' },
+            'Europe/Sofia': { country: 'Bulgaria', region: 'Sofia' },
+            'Europe/Athens': { country: 'Greece', region: 'Attica' },
+            'Europe/Lisbon': { country: 'Portugal', region: 'Lisbon' },
+            'Europe/Dublin': { country: 'Ireland', region: 'Dublin' },
+            'Asia/Tokyo': { country: 'Japan', region: 'Tokyo' },
+            'Asia/Shanghai': { country: 'China', region: 'Shanghai' },
+            'Asia/Seoul': { country: 'South Korea', region: 'Seoul' },
+            'Asia/Singapore': { country: 'Singapore', region: 'Singapore' },
+            'Asia/Hong_Kong': { country: 'Hong Kong', region: 'Hong Kong' },
+            'Asia/Taipei': { country: 'Taiwan', region: 'Taipei' },
+            'Asia/Bangkok': { country: 'Thailand', region: 'Bangkok' },
+            'Asia/Jakarta': { country: 'Indonesia', region: 'Jakarta' },
+            'Asia/Kuala_Lumpur': { country: 'Malaysia', region: 'Kuala Lumpur' },
+            'Asia/Manila': { country: 'Philippines', region: 'Manila' },
+            'Asia/Ho_Chi_Minh': { country: 'Vietnam', region: 'Ho Chi Minh City' },
+            'Asia/Kolkata': { country: 'India', region: 'West Bengal' },
+            'Asia/Dubai': { country: 'United Arab Emirates', region: 'Dubai' },
+            'Asia/Riyadh': { country: 'Saudi Arabia', region: 'Riyadh' },
+            'Asia/Tehran': { country: 'Iran', region: 'Tehran' },
+            'Asia/Jerusalem': { country: 'Israel', region: 'Jerusalem' },
+            'Asia/Istanbul': { country: 'Turkey', region: 'Istanbul' },
+            'Africa/Cairo': { country: 'Egypt', region: 'Cairo' },
+            'Africa/Johannesburg': { country: 'South Africa', region: 'Gauteng' },
+            'Africa/Lagos': { country: 'Nigeria', region: 'Lagos' },
+            'Africa/Casablanca': { country: 'Morocco', region: 'Casablanca' },
+            'Africa/Tunis': { country: 'Tunisia', region: 'Tunis' },
+            'Africa/Algiers': { country: 'Algeria', region: 'Algiers' },
+            'Australia/Sydney': { country: 'Australia', region: 'New South Wales' },
+            'Australia/Melbourne': { country: 'Australia', region: 'Victoria' },
+            'Australia/Perth': { country: 'Australia', region: 'Western Australia' },
+            'Pacific/Auckland': { country: 'New Zealand', region: 'Auckland' },
+            'America/Toronto': { country: 'Canada', region: 'Ontario' },
+            'America/Vancouver': { country: 'Canada', region: 'British Columbia' },
+            'America/Montreal': { country: 'Canada', region: 'Quebec' },
+            'America/Sao_Paulo': { country: 'Brazil', region: 'São Paulo' },
+            'America/Argentina/Buenos_Aires': { country: 'Argentina', region: 'Buenos Aires' },
+            'America/Mexico_City': { country: 'Mexico', region: 'Mexico City' },
+            'America/Bogota': { country: 'Colombia', region: 'Bogotá' },
+            'America/Lima': { country: 'Peru', region: 'Lima' },
+            'America/Santiago': { country: 'Chile', region: 'Santiago' },
+            'America/Caracas': { country: 'Venezuela', region: 'Caracas' }
         };
         
-        return countryMap[timezone] || 'Unknown';
+        const location = countryMap[timezone] || { country: 'Unknown', region: 'Unknown' };
+        return {
+            country: location.country,
+            city: 'Unknown',
+            region: location.region,
+            ip: 'Unknown',
+            isp: 'Unknown',
+            timezone: timezone,
+            latitude: null,
+            longitude: null,
+            postal: null,
+            country_code: null,
+            region_code: null
+        };
     }
+}
+
+// Enhanced helper functions for comprehensive user tracking
+function getConnectionType() {
+    if (navigator.connection) {
+        return navigator.connection.type || 'unknown';
+    }
+    return 'unknown';
+}
+
+function getConnectionEffectiveType() {
+    if (navigator.connection) {
+        return navigator.connection.effectiveType || 'unknown';
+    }
+    return 'unknown';
+}
+
+function getConnectionDownlink() {
+    if (navigator.connection) {
+        return navigator.connection.downlink || 0;
+    }
+    return 0;
+}
+
+function getConnectionRTT() {
+    if (navigator.connection) {
+        return navigator.connection.rtt || 0;
+    }
+    return 0;
+}
+
+function getScreenOrientation() {
+    if (screen.orientation) {
+        return screen.orientation.type || 'unknown';
+    }
+    return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+}
+
+function getWebPSupport() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+}
+
+function getUrlParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name) || null;
+}
+
+function getDeviceCategory() {
+    const width = window.innerWidth;
+    if (width < 768) return 'mobile';
+    if (width < 1024) return 'tablet';
+    return 'desktop';
+}
+
+function getBrowserVersion() {
+    const userAgent = navigator.userAgent;
+    const browsers = [
+        { name: 'Chrome', regex: /Chrome\/(\d+)/ },
+        { name: 'Firefox', regex: /Firefox\/(\d+)/ },
+        { name: 'Safari', regex: /Version\/(\d+).*Safari/ },
+        { name: 'Edge', regex: /Edg\/(\d+)/ },
+        { name: 'Opera', regex: /OPR\/(\d+)/ }
+    ];
+    
+    for (const browser of browsers) {
+        const match = userAgent.match(browser.regex);
+        if (match) {
+            return `${browser.name} ${match[1]}`;
+        }
+    }
+    return 'Unknown';
+}
+
+function getOSVersion() {
+    const userAgent = navigator.userAgent;
+    const osPatterns = [
+        { name: 'Windows', regex: /Windows NT (\d+\.\d+)/ },
+        { name: 'macOS', regex: /Mac OS X (\d+[._]\d+)/ },
+        { name: 'Linux', regex: /Linux/ },
+        { name: 'Android', regex: /Android (\d+\.\d+)/ },
+        { name: 'iOS', regex: /OS (\d+[._]\d+)/ }
+    ];
+    
+    for (const os of osPatterns) {
+        const match = userAgent.match(os.regex);
+        if (match) {
+            return `${os.name} ${match[1].replace('_', '.')}`;
+        }
+    }
+    return 'Unknown';
+}
+
+// Legacy function for backward compatibility
+async function getCountry() {
+    const userInfo = await getComprehensiveUserInfo();
+    return userInfo.country;
+}
+
+// User Behavior and Engagement Tracking
+function initUserBehaviorTracking() {
+    let engagementScore = 0;
+    let pageViews = 1;
+    let eventsCount = 0;
+    let sessionStartTime = Date.now();
+    let lastActivityTime = Date.now();
+    let scrollDepth = 0;
+    let maxScrollDepth = 0;
+    let timeOnPage = 0;
+    let mouseMovements = 0;
+    let clicks = 0;
+    let keystrokes = 0;
+    let formInteractions = 0;
+    
+    // Track scroll depth
+    let scrollTimeout;
+    window.addEventListener('scroll', debounce(() => {
+        scrollDepth = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        if (scrollDepth > maxScrollDepth) {
+            maxScrollDepth = scrollDepth;
+            updateUserEngagement('scroll_depth', scrollDepth);
+        }
+    }, 100));
+    
+    // Track mouse movements
+    let mouseTimeout;
+    document.addEventListener('mousemove', debounce(() => {
+        mouseMovements++;
+        lastActivityTime = Date.now();
+        updateUserEngagement('mouse_movement', mouseMovements);
+    }, 1000));
+    
+    // Track clicks
+    document.addEventListener('click', (e) => {
+        clicks++;
+        lastActivityTime = Date.now();
+        updateUserEngagement('click', clicks);
+        
+        // Track specific click types
+        if (e.target.tagName === 'A') {
+            updateUserEngagement('link_click', 1);
+        } else if (e.target.tagName === 'BUTTON') {
+            updateUserEngagement('button_click', 1);
+        }
+    });
+    
+    // Track keystrokes
+    document.addEventListener('keydown', (e) => {
+        keystrokes++;
+        lastActivityTime = Date.now();
+        updateUserEngagement('keystroke', keystrokes);
+    });
+    
+    // Track form interactions
+    document.addEventListener('focus', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+            formInteractions++;
+            updateUserEngagement('form_interaction', formInteractions);
+        }
+    });
+    
+    // Track time on page
+    setInterval(() => {
+        timeOnPage = Math.round((Date.now() - sessionStartTime) / 1000);
+        updateUserEngagement('time_on_page', timeOnPage);
+    }, 5000);
+    
+    // Track page visibility changes
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            updateUserEngagement('page_hidden', 1);
+        } else {
+            updateUserEngagement('page_visible', 1);
+            lastActivityTime = Date.now();
+        }
+    });
+    
+    // Track window focus/blur
+    window.addEventListener('focus', () => {
+        updateUserEngagement('window_focus', 1);
+        lastActivityTime = Date.now();
+    });
+    
+    window.addEventListener('blur', () => {
+        updateUserEngagement('window_blur', 1);
+    });
+    
+    // Track resize events
+    let resizeTimeout;
+    window.addEventListener('resize', debounce(() => {
+        updateUserEngagement('window_resize', 1);
+    }, 500));
+    
+    // Update engagement score periodically
+    setInterval(calculateEngagementScore, 10000);
+    
+    function updateUserEngagement(metric, value) {
+        if (typeof mixpanel !== 'undefined') {
+            mixpanel.people.increment(metric, value);
+            mixpanel.track('User Engagement', {
+                'metric': metric,
+                'value': value,
+                'timestamp': new Date().toISOString()
+            });
+        }
+    }
+    
+    function calculateEngagementScore() {
+        // Calculate engagement score based on various factors
+        let score = 0;
+        
+        // Time on page (max 30 points)
+        score += Math.min(timeOnPage / 60, 30);
+        
+        // Scroll depth (max 25 points)
+        score += (maxScrollDepth / 100) * 25;
+        
+        // Mouse movements (max 15 points)
+        score += Math.min(mouseMovements / 10, 15);
+        
+        // Clicks (max 15 points)
+        score += Math.min(clicks * 3, 15);
+        
+        // Form interactions (max 10 points)
+        score += Math.min(formInteractions * 5, 10);
+        
+        // Keystrokes (max 5 points)
+        score += Math.min(keystrokes / 20, 5);
+        
+        engagementScore = Math.round(score);
+        
+        // Update user properties
+        if (typeof mixpanel !== 'undefined') {
+            mixpanel.people.set({
+                'Engagement Score': engagementScore,
+                'Max Scroll Depth': maxScrollDepth,
+                'Time on Page': timeOnPage,
+                'Mouse Movements': mouseMovements,
+                'Clicks': clicks,
+                'Form Interactions': formInteractions,
+                'Keystrokes': keystrokes,
+                'Last Activity': new Date(lastActivityTime).toISOString(),
+                'Bounce Risk': engagementScore < 10 ? 'high' : engagementScore < 30 ? 'medium' : 'low'
+            });
+            
+            mixpanel.track('Engagement Score Updated', {
+                'engagement_score': engagementScore,
+                'max_scroll_depth': maxScrollDepth,
+                'time_on_page': timeOnPage,
+                'bounce_risk': engagementScore < 10 ? 'high' : engagementScore < 30 ? 'medium' : 'low',
+                'timestamp': new Date().toISOString()
+            });
+        }
+    }
+    
+    // Track page unload
+    window.addEventListener('beforeunload', () => {
+        const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000);
+        
+        if (typeof mixpanel !== 'undefined') {
+            mixpanel.people.set({
+                'Session Duration': sessionDuration,
+                'Last Visit': new Date().toISOString(),
+                'Page Views': pageViews,
+                'Events Count': eventsCount
+            });
+            
+            mixpanel.track('Session End', {
+                'session_duration': sessionDuration,
+                'engagement_score': engagementScore,
+                'max_scroll_depth': maxScrollDepth,
+                'page_views': pageViews,
+                'events_count': eventsCount,
+                'timestamp': new Date().toISOString()
+            });
+        }
+    });
 }
 
 // Comprehensive Event Tracking
