@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initAnimations();
     initLanguageToggle();
     initCVDownload();
+    initEventTracking();
 });
 
 // Navigation functionality
@@ -137,11 +138,17 @@ function initContactForm() {
             // Simulate form submission (replace with actual endpoint)
             await new Promise(resolve => setTimeout(resolve, 2000));
             
+            // Track successful form submission
+            trackEvent('form_submit', 'Contact', 'Form Submission', 'Contact Form', 1);
+            
             // Show success message
             showNotification(getTranslation('contact.form.success'), 'success');
             contactForm.reset();
             
         } catch (error) {
+            // Track form submission error
+            trackEvent('form_error', 'Contact', 'Form Error', 'Contact Form', 0);
+            
             // Show error message
             showNotification(getTranslation('contact.form.error'), 'error');
         } finally {
@@ -263,6 +270,9 @@ function initLanguageToggle() {
     langToggle.addEventListener('click', () => {
         const newLang = currentLanguage === 'en' ? 'fr' : 'en';
         setLanguage(newLang);
+        
+        // Track language switch event
+        trackEvent('language_switch', 'User Interaction', 'Language Toggle', `Switch to ${newLang.toUpperCase()}`, 1);
     });
 }
 
@@ -273,6 +283,9 @@ function initCVDownload() {
     cvDownload.addEventListener('click', () => {
         // Download CV based on current language
         const cvFile = currentLanguage === 'en' ? 'files/Bouaziz-Ghassen-EN.pdf' : 'files/Bouaziz-Ghassen-FR.pdf';
+        
+        // Track CV download event
+        trackEvent('cv_download', 'Downloads', 'CV Download', `CV-${currentLanguage.toUpperCase()}`, 1);
         
         // Create a temporary link element to trigger download
         const link = document.createElement('a');
@@ -287,6 +300,83 @@ function initCVDownload() {
         
         // Show success notification
         showNotification('CV downloaded successfully!', 'success');
+    });
+}
+
+// Google Tag Manager Event Tracking
+function trackEvent(eventName, eventCategory, eventAction, eventLabel, eventValue) {
+    if (typeof gtag !== 'undefined') {
+        gtag('event', eventName, {
+            event_category: eventCategory,
+            event_action: eventAction,
+            event_label: eventLabel,
+            value: eventValue
+        });
+    }
+    
+    // Also push to dataLayer for GTM
+    if (typeof dataLayer !== 'undefined') {
+        dataLayer.push({
+            'event': eventName,
+            'event_category': eventCategory,
+            'event_action': eventAction,
+            'event_label': eventLabel,
+            'value': eventValue
+        });
+    }
+}
+
+// Comprehensive Event Tracking
+function initEventTracking() {
+    // Track navigation clicks
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            const sectionName = link.getAttribute('href').substring(1);
+            trackEvent('navigation_click', 'Navigation', 'Section Navigation', sectionName, 1);
+        });
+    });
+
+    // Track hero button clicks
+    document.querySelectorAll('.hero-actions .btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const buttonText = btn.querySelector('span').textContent;
+            trackEvent('hero_button_click', 'CTA', 'Hero Button', buttonText, 1);
+        });
+    });
+
+    // Track project link clicks
+    document.querySelectorAll('.project-link').forEach(link => {
+        link.addEventListener('click', () => {
+            const projectCard = link.closest('.project-card');
+            const projectName = projectCard.querySelector('h3').textContent;
+            const linkType = link.textContent.includes('App Store') ? 'App Store' : 'Source Code';
+            trackEvent('project_link_click', 'Projects', 'Project Link', `${projectName} - ${linkType}`, 1);
+        });
+    });
+
+    // Track social media clicks
+    document.querySelectorAll('.social-link').forEach(link => {
+        link.addEventListener('click', () => {
+            const platform = link.querySelector('i').className.includes('linkedin') ? 'LinkedIn' : 
+                           link.querySelector('i').className.includes('envelope') ? 'Email' : 'Phone';
+            trackEvent('social_click', 'Social Media', 'Social Link', platform, 1);
+        });
+    });
+
+    // Track scroll depth (optional - can be resource intensive)
+    let maxScrollDepth = 0;
+    window.addEventListener('scroll', debounce(() => {
+        const scrollDepth = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        if (scrollDepth > maxScrollDepth && scrollDepth % 25 === 0) { // Track at 25%, 50%, 75%, 100%
+            maxScrollDepth = scrollDepth;
+            trackEvent('scroll_depth', 'Engagement', 'Scroll Depth', `${scrollDepth}%`, scrollDepth);
+        }
+    }, 1000));
+
+    // Track page load time
+    window.addEventListener('load', () => {
+        const loadTime = Math.round(performance.now());
+        trackEvent('page_load', 'Performance', 'Page Load Time', 'Portfolio Load', loadTime);
     });
 }
 
