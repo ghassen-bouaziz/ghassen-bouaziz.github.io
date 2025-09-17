@@ -1,11 +1,12 @@
 // Modern Portfolio JavaScript
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Initialize all functionality
     initNavigation();
     initScrollEffects();
     initContactForm();
     initAnimations();
     initLanguageToggle();
+    initDarkModeToggle();
     initCVDownload();
     initEventTracking();
     initUserIdentity();
@@ -62,7 +63,7 @@ function initScrollEffects() {
             e.preventDefault();
             const targetId = link.getAttribute('href');
             const targetSection = document.querySelector(targetId);
-            
+
             if (targetSection) {
                 const offsetTop = targetSection.offsetTop - 80;
                 window.scrollTo({
@@ -116,17 +117,17 @@ function initScrollEffects() {
 // Contact form functionality
 function initContactForm() {
     const contactForm = document.getElementById('contactForm');
-    
+
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const submitBtn = contactForm.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
-        
+
         // Show loading state
         submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${getTranslation('contact.form.sending')}`;
         submitBtn.disabled = true;
-        
+
         // Get form data
         const formData = new FormData(contactForm);
         const data = {
@@ -135,14 +136,14 @@ function initContactForm() {
             subject: formData.get('subject'),
             message: formData.get('message')
         };
-        
+
         try {
             // Simulate form submission (replace with actual endpoint)
             await new Promise(resolve => setTimeout(resolve, 2000));
-            
+
             // Track successful form submission
             trackEvent('form_submit', 'Contact', 'Form Submission', 'Contact Form', 1);
-            
+
             // Track lead conversion
             const userId = getUserId();
             if (typeof dataLayer !== 'undefined') {
@@ -153,10 +154,10 @@ function initContactForm() {
                     'lead_subject': data.subject
                 });
             }
-            
+
             // Track lead conversion event
             trackEvent('lead_conversion', 'Conversion', 'Lead Generated', `Lead: ${data.email}`, 1);
-            
+
             // Update user as lead in Mixpanel
             if (typeof mixpanel !== 'undefined') {
                 mixpanel.people.set({
@@ -166,7 +167,7 @@ function initContactForm() {
                     'Lead Subject': data.subject,
                     'Lead Generated': new Date().toISOString()
                 });
-                
+
                 // Track lead conversion with detailed properties
                 mixpanel.track('Lead Conversion', {
                     'lead_email': data.email,
@@ -176,15 +177,15 @@ function initContactForm() {
                     'timestamp': new Date().toISOString()
                 });
             }
-            
+
             // Show success message
             showNotification(getTranslation('contact.form.success'), 'success');
             contactForm.reset();
-            
+
         } catch (error) {
             // Track form submission error
             trackEvent('form_error', 'Contact', 'Form Error', 'Contact Form', 0);
-            
+
             // Show error message
             showNotification(getTranslation('contact.form.error'), 'error');
         } finally {
@@ -202,7 +203,7 @@ function showNotification(message, type = 'info') {
     if (existingNotification) {
         existingNotification.remove();
     }
-    
+
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
@@ -212,14 +213,14 @@ function showNotification(message, type = 'info') {
             <button class="notification-close">&times;</button>
         </div>
     `;
-    
+
     // Add styles
     const colors = {
         success: '#10b981',
         error: '#ef4444',
         info: '#3b82f6'
     };
-    
+
     notification.style.cssText = `
         position: fixed;
         top: 100px;
@@ -235,22 +236,22 @@ function showNotification(message, type = 'info') {
         max-width: 400px;
         font-weight: 500;
     `;
-    
+
     // Add to page
     document.body.appendChild(notification);
-    
+
     // Animate in
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 100);
-    
+
     // Close button functionality
     const closeBtn = notification.querySelector('.notification-close');
     closeBtn.addEventListener('click', () => {
         notification.style.transform = 'translateX(400px)';
         setTimeout(() => notification.remove(), 300);
     });
-    
+
     // Auto remove after 5 seconds
     setTimeout(() => {
         if (notification.parentNode) {
@@ -285,7 +286,7 @@ function animateCounter(element) {
     const duration = 2000;
     const increment = target / (duration / 16);
     let current = 0;
-    
+
     const updateCounter = () => {
         if (current < target) {
             current += increment;
@@ -295,45 +296,91 @@ function animateCounter(element) {
             element.textContent = target + suffix;
         }
     };
-    
+
     updateCounter();
 }
 
 // Language toggle functionality
 function initLanguageToggle() {
     const langToggle = document.getElementById('lang-toggle');
-    
+
     langToggle.addEventListener('click', () => {
         const newLang = currentLanguage === 'en' ? 'fr' : 'en';
         setLanguage(newLang);
-        
+
         // Track language switch event
         trackEvent('language_switch', 'User Interaction', 'Language Toggle', `Switch to ${newLang.toUpperCase()}`, 1);
     });
 }
 
+// Dark mode toggle functionality
+function initDarkModeToggle() {
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const body = document.body;
+
+    // Check for saved theme preference or default to system preference
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const currentTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+    // Apply the saved theme
+    body.setAttribute('data-theme', currentTheme);
+
+    // Update icon based on current theme
+    updateDarkModeIcon(currentTheme);
+
+    darkModeToggle.addEventListener('click', () => {
+        const currentTheme = body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        // Apply new theme
+        body.setAttribute('data-theme', newTheme);
+
+        // Save theme preference
+        localStorage.setItem('theme', newTheme);
+
+        // Update icon
+        updateDarkModeIcon(newTheme);
+
+        // Track dark mode toggle event
+        trackEvent('dark_mode_toggle', 'User Interaction', 'Theme Toggle', `Switch to ${newTheme} mode`, 1);
+    });
+}
+
+// Update dark mode icon based on theme
+function updateDarkModeIcon(theme) {
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const icon = darkModeToggle.querySelector('i');
+
+    if (theme === 'dark') {
+        icon.className = 'fas fa-sun';
+    } else {
+        icon.className = 'fas fa-moon';
+    }
+}
+
 // CV Download functionality
 function initCVDownload() {
     const cvDownload = document.getElementById('cv-download');
-    
+
     cvDownload.addEventListener('click', () => {
         // Download CV based on current language
         const cvFile = currentLanguage === 'en' ? 'files/Bouaziz-Ghassen-EN.pdf' : 'files/Bouaziz-Ghassen-FR.pdf';
-        
+
         // Track CV download event
         trackEvent('cv_download', 'Downloads', 'CV Download', `CV-${currentLanguage.toUpperCase()}`, 1);
-        
+
         // Create a temporary link element to trigger download
         const link = document.createElement('a');
         link.href = cvFile;
         link.download = `Bouaziz-Ghassen-CV-${currentLanguage.toUpperCase()}.pdf`;
         link.target = '_blank';
-        
+
         // Append to body, click, and remove
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Show success notification
         showNotification('CV downloaded successfully!', 'success');
     });
@@ -349,7 +396,7 @@ function trackEvent(eventName, eventCategory, eventAction, eventLabel, eventValu
             value: eventValue
         });
     }
-    
+
     // Also push to dataLayer for GTM
     if (typeof dataLayer !== 'undefined') {
         dataLayer.push({
@@ -360,7 +407,7 @@ function trackEvent(eventName, eventCategory, eventAction, eventLabel, eventValu
             'value': eventValue
         });
     }
-    
+
     // Track in Mixpanel
     if (typeof mixpanel !== 'undefined') {
         mixpanel.track(eventName, {
@@ -378,10 +425,10 @@ async function initUserIdentity() {
     // Generate or retrieve user ID
     let userId = getUserId();
     let sessionId = getSessionId();
-    
+
     // Get comprehensive user information
     const userInfo = await getComprehensiveUserInfo();
-    
+
     // Set user properties
     const userProperties = {
         'user_type': 'portfolio_visitor',
@@ -429,7 +476,7 @@ async function initUserIdentity() {
         'user_interest_categories': [],
         'user_behavior_pattern': 'new_visitor'
     };
-    
+
     // Set user ID in dataLayer
     if (typeof dataLayer !== 'undefined') {
         dataLayer.push({
@@ -439,7 +486,7 @@ async function initUserIdentity() {
             'user_properties': userProperties
         });
     }
-    
+
     // Set user ID in GA4
     if (typeof gtag !== 'undefined') {
         gtag('config', 'GA_MEASUREMENT_ID', {
@@ -460,10 +507,10 @@ async function initUserIdentity() {
             }
         });
     }
-    
+
     // Track user identification event
     trackEvent('user_identification', 'User', 'User Identified', `User: ${userId}`, 1);
-    
+
     // Set comprehensive user properties in Mixpanel
     if (typeof mixpanel !== 'undefined') {
         mixpanel.identify(userId);
@@ -475,13 +522,13 @@ async function initUserIdentity() {
             '$phone': null,
             '$created': new Date().toISOString(),
             '$last_seen': new Date().toISOString(),
-            
+
             // User Classification
             'User Type': 'portfolio_visitor',
             'User Status': 'active',
             'User Segment': 'anonymous_visitor',
             'User Cohort': 'new_visitor',
-            
+
             // Traffic & Source
             'Traffic Source': userProperties.user_source,
             'Referrer': document.referrer || 'direct',
@@ -490,7 +537,7 @@ async function initUserIdentity() {
             'UTM Campaign': getUrlParameter('utm_campaign'),
             'UTM Term': getUrlParameter('utm_term'),
             'UTM Content': getUrlParameter('utm_content'),
-            
+
             // Device & Browser
             'Device Type': userProperties.user_device,
             'Device Category': getDeviceCategory(),
@@ -499,7 +546,7 @@ async function initUserIdentity() {
             'Operating System': userProperties.user_os,
             'OS Version': getOSVersion(),
             'Platform': userProperties.user_platform,
-            
+
             // Screen & Display
             'Screen Resolution': userProperties.user_screen_resolution,
             'Viewport Size': userProperties.user_viewport_size,
@@ -507,7 +554,7 @@ async function initUserIdentity() {
             'Color Depth': userProperties.user_color_depth,
             'Pixel Ratio': userProperties.user_pixel_ratio,
             'Screen Orientation': userProperties.user_orientation,
-            
+
             // Location & Network
             'Country': userProperties.user_country,
             'City': userProperties.user_city,
@@ -518,7 +565,7 @@ async function initUserIdentity() {
             'Language': userProperties.user_language,
             'Locale': navigator.language,
             'Languages': navigator.languages ? navigator.languages.join(',') : navigator.language,
-            
+
             // Connection & Performance
             'Connection Type': userProperties.user_connection_type,
             'Connection Effective Type': userProperties.user_connection_effective_type,
@@ -527,7 +574,7 @@ async function initUserIdentity() {
             'Hardware Concurrency': userProperties.user_hardware_concurrency,
             'Device Memory': userProperties.user_memory,
             'Max Touch Points': userProperties.user_max_touch_points,
-            
+
             // Capabilities & Features
             'Touch Support': userProperties.user_touch_support,
             'Geolocation Support': userProperties.user_geolocation_support,
@@ -538,7 +585,7 @@ async function initUserIdentity() {
             'Java Enabled': userProperties.user_java_enabled,
             'Cookie Enabled': userProperties.user_cookie_enabled,
             'Do Not Track': userProperties.user_do_not_track,
-            
+
             // Session & Engagement
             'First Visit': new Date().toISOString(),
             'Last Visit': new Date().toISOString(),
@@ -550,7 +597,7 @@ async function initUserIdentity() {
             'Engagement Score': userProperties.user_engagement_score,
             'Bounce Risk': userProperties.user_bounce_risk,
             'Behavior Pattern': userProperties.user_behavior_pattern,
-            
+
             // Interest & Behavior
             'Interest Categories': userProperties.user_interest_categories,
             'Preferred Language': userProperties.user_language,
@@ -562,7 +609,7 @@ async function initUserIdentity() {
             'Desktop User': userProperties.user_device === 'desktop',
             'Tablet User': userProperties.user_device === 'tablet'
         });
-        
+
         // Track comprehensive user profile creation
         mixpanel.track('User Profile Created', {
             'user_id': userId,
@@ -577,26 +624,26 @@ async function initUserIdentity() {
 function getUserId() {
     // Check if user ID exists in localStorage
     let userId = localStorage.getItem('portfolio_user_id');
-    
+
     if (!userId) {
         // Generate new user ID
         userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('portfolio_user_id', userId);
     }
-    
+
     return userId;
 }
 
 function getSessionId() {
     // Check if session ID exists in sessionStorage
     let sessionId = sessionStorage.getItem('portfolio_session_id');
-    
+
     if (!sessionId) {
         // Generate new session ID
         sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         sessionStorage.setItem('portfolio_session_id', sessionId);
     }
-    
+
     return sessionId;
 }
 
@@ -721,7 +768,7 @@ async function getComprehensiveUserInfo() {
             'America/Santiago': { country: 'Chile', region: 'Santiago' },
             'America/Caracas': { country: 'Venezuela', region: 'Caracas' }
         };
-        
+
         const location = countryMap[timezone] || { country: 'Unknown', region: 'Unknown' };
         return {
             country: location.country,
@@ -803,7 +850,7 @@ function getBrowserVersion() {
         { name: 'Edge', regex: /Edg\/(\d+)/ },
         { name: 'Opera', regex: /OPR\/(\d+)/ }
     ];
-    
+
     for (const browser of browsers) {
         const match = userAgent.match(browser.regex);
         if (match) {
@@ -822,7 +869,7 @@ function getOSVersion() {
         { name: 'Android', regex: /Android (\d+\.\d+)/ },
         { name: 'iOS', regex: /OS (\d+[._]\d+)/ }
     ];
-    
+
     for (const os of osPatterns) {
         const match = userAgent.match(os.regex);
         if (match) {
@@ -852,7 +899,7 @@ function initUserBehaviorTracking() {
     let clicks = 0;
     let keystrokes = 0;
     let formInteractions = 0;
-    
+
     // Track scroll depth
     let scrollTimeout;
     window.addEventListener('scroll', debounce(() => {
@@ -862,7 +909,7 @@ function initUserBehaviorTracking() {
             updateUserEngagement('scroll_depth', scrollDepth);
         }
     }, 100));
-    
+
     // Track mouse movements
     let mouseTimeout;
     document.addEventListener('mousemove', debounce(() => {
@@ -870,13 +917,13 @@ function initUserBehaviorTracking() {
         lastActivityTime = Date.now();
         updateUserEngagement('mouse_movement', mouseMovements);
     }, 1000));
-    
+
     // Track clicks
     document.addEventListener('click', (e) => {
         clicks++;
         lastActivityTime = Date.now();
         updateUserEngagement('click', clicks);
-        
+
         // Track specific click types
         if (e.target.tagName === 'A') {
             updateUserEngagement('link_click', 1);
@@ -884,14 +931,14 @@ function initUserBehaviorTracking() {
             updateUserEngagement('button_click', 1);
         }
     });
-    
+
     // Track keystrokes
     document.addEventListener('keydown', (e) => {
         keystrokes++;
         lastActivityTime = Date.now();
         updateUserEngagement('keystroke', keystrokes);
     });
-    
+
     // Track form interactions
     document.addEventListener('focus', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
@@ -899,13 +946,13 @@ function initUserBehaviorTracking() {
             updateUserEngagement('form_interaction', formInteractions);
         }
     });
-    
+
     // Track time on page
     setInterval(() => {
         timeOnPage = Math.round((Date.now() - sessionStartTime) / 1000);
         updateUserEngagement('time_on_page', timeOnPage);
     }, 5000);
-    
+
     // Track page visibility changes
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
@@ -915,26 +962,26 @@ function initUserBehaviorTracking() {
             lastActivityTime = Date.now();
         }
     });
-    
+
     // Track window focus/blur
     window.addEventListener('focus', () => {
         updateUserEngagement('window_focus', 1);
         lastActivityTime = Date.now();
     });
-    
+
     window.addEventListener('blur', () => {
         updateUserEngagement('window_blur', 1);
     });
-    
+
     // Track resize events
     let resizeTimeout;
     window.addEventListener('resize', debounce(() => {
         updateUserEngagement('window_resize', 1);
     }, 500));
-    
+
     // Update engagement score periodically
     setInterval(calculateEngagementScore, 10000);
-    
+
     function updateUserEngagement(metric, value) {
         if (typeof mixpanel !== 'undefined') {
             mixpanel.people.increment(metric, value);
@@ -945,31 +992,31 @@ function initUserBehaviorTracking() {
             });
         }
     }
-    
+
     function calculateEngagementScore() {
         // Calculate engagement score based on various factors
         let score = 0;
-        
+
         // Time on page (max 30 points)
         score += Math.min(timeOnPage / 60, 30);
-        
+
         // Scroll depth (max 25 points)
         score += (maxScrollDepth / 100) * 25;
-        
+
         // Mouse movements (max 15 points)
         score += Math.min(mouseMovements / 10, 15);
-        
+
         // Clicks (max 15 points)
         score += Math.min(clicks * 3, 15);
-        
+
         // Form interactions (max 10 points)
         score += Math.min(formInteractions * 5, 10);
-        
+
         // Keystrokes (max 5 points)
         score += Math.min(keystrokes / 20, 5);
-        
+
         engagementScore = Math.round(score);
-        
+
         // Update user properties
         if (typeof mixpanel !== 'undefined') {
             mixpanel.people.set({
@@ -983,7 +1030,7 @@ function initUserBehaviorTracking() {
                 'Last Activity': new Date(lastActivityTime).toISOString(),
                 'Bounce Risk': engagementScore < 10 ? 'high' : engagementScore < 30 ? 'medium' : 'low'
             });
-            
+
             mixpanel.track('Engagement Score Updated', {
                 'engagement_score': engagementScore,
                 'max_scroll_depth': maxScrollDepth,
@@ -993,11 +1040,11 @@ function initUserBehaviorTracking() {
             });
         }
     }
-    
+
     // Track page unload
     window.addEventListener('beforeunload', () => {
         const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000);
-        
+
         if (typeof mixpanel !== 'undefined') {
             mixpanel.people.set({
                 'Session Duration': sessionDuration,
@@ -1005,7 +1052,7 @@ function initUserBehaviorTracking() {
                 'Page Views': pageViews,
                 'Events Count': eventsCount
             });
-            
+
             mixpanel.track('Session End', {
                 'session_duration': sessionDuration,
                 'engagement_score': engagementScore,
@@ -1049,8 +1096,8 @@ function initEventTracking() {
     // Track social media clicks
     document.querySelectorAll('.social-link').forEach(link => {
         link.addEventListener('click', () => {
-            const platform = link.querySelector('i').className.includes('linkedin') ? 'LinkedIn' : 
-                           link.querySelector('i').className.includes('envelope') ? 'Email' : 'Phone';
+            const platform = link.querySelector('i').className.includes('linkedin') ? 'LinkedIn' :
+                link.querySelector('i').className.includes('envelope') ? 'Email' : 'Phone';
             trackEvent('social_click', 'Social Media', 'Social Link', platform, 1);
         });
     });
@@ -1069,7 +1116,7 @@ function initEventTracking() {
     window.addEventListener('load', () => {
         const loadTime = Math.round(performance.now());
         trackEvent('page_load', 'Performance', 'Page Load Time', 'Portfolio Load', loadTime);
-        
+
         // Track page view in Mixpanel
         if (typeof mixpanel !== 'undefined') {
             mixpanel.track('Page View', {
@@ -1113,8 +1160,8 @@ console.log(`
 %c🚀 Welcome to Ghassen Bouaziz's Portfolio!
 %cBuilt with modern web technologies and ❤️
 %cFeel free to explore the code and reach out if you have any questions!
-`, 
-'color: #2563eb; font-size: 16px; font-weight: bold;',
-'color: #64748b; font-size: 14px;',
-'color: #94a3b8; font-size: 12px;'
+`,
+    'color: #2563eb; font-size: 16px; font-weight: bold;',
+    'color: #64748b; font-size: 14px;',
+    'color: #94a3b8; font-size: 12px;'
 );
