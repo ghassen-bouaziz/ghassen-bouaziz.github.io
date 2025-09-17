@@ -186,7 +186,8 @@ const translations = {
         
         // Footer
         footer: {
-            copyright: "All rights reserved."
+            copyright: "All rights reserved.",
+            madeWith: "Made with"
         },
         
         // Download CV
@@ -379,7 +380,8 @@ const translations = {
         
         // Footer
         footer: {
-            copyright: "Tous droits réservés."
+            copyright: "Tous droits réservés.",
+            madeWith: "Fait avec"
         },
         
         // Download CV
@@ -525,6 +527,12 @@ function updateContent() {
     const footerText = document.querySelector('.footer-text p');
     if (footerText) {
         footerText.innerHTML = `&copy; 2024 Ghassen Bouaziz. ${getTranslation('footer.copyright')}`;
+    }
+
+    // Update "Made with Cursor" text
+    const madeWithText = document.querySelector('.made-with-text');
+    if (madeWithText) {
+        madeWithText.textContent = getTranslation('footer.madeWith');
     }
 }
 
