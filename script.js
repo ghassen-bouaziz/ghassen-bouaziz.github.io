@@ -156,6 +156,26 @@ function initContactForm() {
             // Track lead conversion event
             trackEvent('lead_conversion', 'Conversion', 'Lead Generated', `Lead: ${data.email}`, 1);
             
+            // Update user as lead in Mixpanel
+            if (typeof mixpanel !== 'undefined') {
+                mixpanel.people.set({
+                    'User Type': 'lead',
+                    'Lead Email': data.email,
+                    'Lead Name': data.name,
+                    'Lead Subject': data.subject,
+                    'Lead Generated': new Date().toISOString()
+                });
+                
+                // Track lead conversion with detailed properties
+                mixpanel.track('Lead Conversion', {
+                    'lead_email': data.email,
+                    'lead_name': data.name,
+                    'lead_subject': data.subject,
+                    'conversion_value': 1,
+                    'timestamp': new Date().toISOString()
+                });
+            }
+            
             // Show success message
             showNotification(getTranslation('contact.form.success'), 'success');
             contactForm.reset();
@@ -339,6 +359,17 @@ function trackEvent(eventName, eventCategory, eventAction, eventLabel, eventValu
             'value': eventValue
         });
     }
+    
+    // Track in Mixpanel
+    if (typeof mixpanel !== 'undefined') {
+        mixpanel.track(eventName, {
+            category: eventCategory,
+            action: eventAction,
+            label: eventLabel,
+            value: eventValue,
+            timestamp: new Date().toISOString()
+        });
+    }
 }
 
 // User Identity Tracking
@@ -393,6 +424,25 @@ async function initUserIdentity() {
     
     // Track user identification event
     trackEvent('user_identification', 'User', 'User Identified', `User: ${userId}`, 1);
+    
+    // Set user properties in Mixpanel
+    if (typeof mixpanel !== 'undefined') {
+        mixpanel.identify(userId);
+        mixpanel.people.set({
+            '$first_name': 'Portfolio',
+            '$last_name': 'Visitor',
+            'User Type': 'portfolio_visitor',
+            'Traffic Source': userProperties.user_source,
+            'Device Type': userProperties.user_device,
+            'Language': userProperties.user_language,
+            'Timezone': userProperties.user_timezone,
+            'Screen Resolution': userProperties.user_screen_resolution,
+            'Browser': userProperties.user_browser,
+            'Operating System': userProperties.user_os,
+            'Country': userProperties.user_country,
+            'First Visit': new Date().toISOString()
+        });
+    }
 }
 
 function getUserId() {
@@ -585,6 +635,16 @@ function initEventTracking() {
     window.addEventListener('load', () => {
         const loadTime = Math.round(performance.now());
         trackEvent('page_load', 'Performance', 'Page Load Time', 'Portfolio Load', loadTime);
+        
+        // Track page view in Mixpanel
+        if (typeof mixpanel !== 'undefined') {
+            mixpanel.track('Page View', {
+                'page_title': document.title,
+                'page_url': window.location.href,
+                'load_time': loadTime,
+                'timestamp': new Date().toISOString()
+            });
+        }
     });
 }
 

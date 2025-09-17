@@ -30,14 +30,44 @@ A modern, responsive portfolio website showcasing my work as a Senior Mobile Dev
 
 ## Getting Started
 
-1. Clone or download the repository
-2. Open `index.html` in a web browser
-3. For local development, use a local server:
-   ```bash
-   python -m http.server 8000
-   # or
-   npx serve .
-   ```
+### Local Development
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Copy environment file: `cp env.example .env.local`
+4. Update `.env.local` with your actual tokens
+5. Build and serve: `npm run dev`
+
+### Production Deployment
+
+1. Set up GitHub Secrets (see `GITHUB_SECRETS_SETUP.md`)
+2. Push to main branch
+3. GitHub Actions will automatically deploy
+
+### Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Set up environment
+cp env.example .env.local
+# Edit .env.local with your tokens
+
+# Build and serve locally
+npm run dev
+```
+
+## 🔐 Environment Variables
+
+Create `.env.local` file with your tokens:
+
+```bash
+MIXPANEL_PROJECT_TOKEN=your_mixpanel_token_here
+GTM_CONTAINER_ID=GTM-MKMMSLMW
+GA4_MEASUREMENT_ID=G-XXXXXXXXXX
+SITE_URL=https://your-domain.com
+```
 
 ## File Structure
 
