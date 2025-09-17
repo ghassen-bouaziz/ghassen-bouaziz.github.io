@@ -1,0 +1,53 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://ghassen-bouaziz.dev/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Allow all search engines to index the site
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Block access to sensitive files
+Disallow: /sw.js
+Disallow: /manifest.json
+Disallow: /*.json$
+Disallow: /files/
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /.env
+Disallow: /package*.json
+Disallow: /README.md
+Disallow: /MOBILE_ENHANCEMENTS.md
+Disallow: /TRANSLATION_FEATURES.md
+Disallow: /PORTFOLIO_SUMMARY.md
+Disallow: /cv_analysis.md
+Disallow: /extract_cv.py
+
+# Allow access to important files
+Allow: /index.html
+Allow: /styles.css
+Allow: /script.js
+Allow: /translations.js
+Allow: /manifest.json
+Allow: /sw.js
+
+

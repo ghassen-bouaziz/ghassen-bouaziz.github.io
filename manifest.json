@@ -1,0 +1,55 @@
+{
+  "name": "Ghassen Bouaziz - Portfolio",
+  "short_name": "GB Portfolio",
+  "description": "Senior Mobile Developer & Full-Stack Expert Portfolio",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["portfolio", "developer", "mobile"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMyNTYzZWIiLz4KPHBhdGggZD0iTTk2IDQ4Qzc3LjkwODYgNDggNjQgNjEuOTA4NiA2NCA4MFYxMTJDNjQgMTMwLjA5MSA3Ny45MDg2IDE0NCA5NiAxNDRDMTE0LjA5MSAxNDQgMTI4IDEzMC4wOTEgMTI4IDExMlY4MEMxMjggNjEuOTA4NiAxMTQuMDkxIDQ4IDk2IDQ4WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTk2IDU2Qzg1LjUyMjggNTYgNzcgNjQuNTIyOCA3NyA3NVYxMTdDNzcgMTI3LjQ3NyA4NS41MjI4IDEzNiA5NiAxMzZDMTA2LjQ3NyAxMzYgMTE1IDEyNy40NzcgMTE1IDExN1Y3NUMxMTUgNjQuNTIyOCAxMDYuNDc3IDU2IDk2IDU2WiIgZmlsbD0iIzI1NjNlYiIvPgo8L3N2Zz4K",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9IiMyNTYzZWIiLz4KPHBhdGggZD0iTTI1NiAxMjhDMTk3LjkwOSAxMjggMTUyIDE3My45MDkgMTUyIDIzMlY0MDBDMTUyIDQ1OC4wOTEgMTk3LjkwOSA1MDQgMjU2IDUwNEMzMTQuMDkxIDUwNCAzNjAgNDU4LjA5MSAzNjAgNDAwVjIzMkMzNjAgMTczLjkwOSAzMTQuMDkxIDEyOCAyNTYgMTI4WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTI1NiAxNDlDMjI4LjA2MSAxNDkgMjA1IDE3Mi4wNjEgMjA1IDIwMFYzMzJDMjA1IDM1OS45MzkgMjI4LjA2MSAzODMgMjU2IDM4M0MyODMuOTM5IDM4MyAzMDcgMzU5LjkzOSAzMDcgMzMyVjIwMEMzMDcgMTcyLjA2MSAyODMuOTM5IDE0OSAyNTYgMTQ5WiIgZmlsbD0iIzI1NjNlYiIvPgo8L3N2Zz4K",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Contact",
+      "short_name": "Contact",
+      "description": "Get in touch with Ghassen",
+      "url": "/#contact",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMTIiIGZpbGw9IiMyNTYzZWIiLz4KPHBhdGggZD0iTTQ4IDI0QzM2Ljk1NDMgMjQgMjggMzIuOTU0MyAyOCA0NFY2MEMyOCA3MS4wNDU3IDM2Ljk1NDMgODAgNDggODBDNTkuMDQ1NyA4MCA2OCA3MS4wNDU3IDY4IDYwVjQ0QzY4IDMyLjk1NDMgNTkuMDQ1NyAyNCA0OCAyNFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00OCAzMkM0My41ODE3IDMyIDQwIDM1LjU4MTcgNDAgNDBWNTZDNDAgNjAuNDE4MyA0My41ODE3IDY0IDQ4IDY0QzUyLjQxODMgNjQgNTYgNjAuNDE4MyA1NiA1NlY0MEM1NiAzNS41ODE3IDUyLjQxODMgMzIgNDggMzJaIiBmaWxsPSIjMjU2M2ViIi8+Cjwvc3ZnPgo=",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "short_name": "Projects",
+      "description": "View portfolio projects",
+      "url": "/#projects",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMTIiIGZpbGw9IiMyNTYzZWIiLz4KPHBhdGggZD0iTTI0IDI0SDcyVjcySDI0VjI0WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTMyIDMySDY0VjY0SDMyVjMyWiIgZmlsbD0iIzI1NjNlYiIvPgo8L3N2Zz4K",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
