@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initLanguageToggle();
     initCVDownload();
     initEventTracking();
+    initUserIdentity();
 });
 
 // Navigation functionality
@@ -140,6 +141,20 @@ function initContactForm() {
             
             // Track successful form submission
             trackEvent('form_submit', 'Contact', 'Form Submission', 'Contact Form', 1);
+            
+            // Track lead conversion
+            const userId = getUserId();
+            if (typeof dataLayer !== 'undefined') {
+                dataLayer.push({
+                    'user_type': 'lead',
+                    'lead_email': data.email,
+                    'lead_name': data.name,
+                    'lead_subject': data.subject
+                });
+            }
+            
+            // Track lead conversion event
+            trackEvent('lead_conversion', 'Conversion', 'Lead Generated', `Lead: ${data.email}`, 1);
             
             // Show success message
             showNotification(getTranslation('contact.form.success'), 'success');
@@ -323,6 +338,199 @@ function trackEvent(eventName, eventCategory, eventAction, eventLabel, eventValu
             'event_label': eventLabel,
             'value': eventValue
         });
+    }
+}
+
+// User Identity Tracking
+async function initUserIdentity() {
+    // Generate or retrieve user ID
+    let userId = getUserId();
+    let sessionId = getSessionId();
+    
+    // Get country information
+    const country = await getCountry();
+    
+    // Set user properties
+    const userProperties = {
+        'user_type': 'portfolio_visitor',
+        'user_source': getTrafficSource(),
+        'user_device': getDeviceType(),
+        'user_language': currentLanguage || 'en',
+        'user_timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+        'user_screen_resolution': `${screen.width}x${screen.height}`,
+        'user_browser': getBrowserInfo(),
+        'user_os': getOperatingSystem(),
+        'user_country': country
+    };
+    
+    // Set user ID in dataLayer
+    if (typeof dataLayer !== 'undefined') {
+        dataLayer.push({
+            'user_id': userId,
+            'user_type': 'anonymous',
+            'user_session': sessionId,
+            'user_properties': userProperties
+        });
+    }
+    
+    // Set user ID in GA4
+    if (typeof gtag !== 'undefined') {
+        gtag('config', 'GA_MEASUREMENT_ID', {
+            'user_id': userId,
+            'custom_map': {
+                'custom_parameter_1': 'user_type',
+                'custom_parameter_2': 'user_source',
+                'custom_parameter_3': 'user_device',
+                'custom_parameter_4': 'user_language',
+                'custom_parameter_5': 'user_timezone',
+                'custom_parameter_6': 'user_screen_resolution',
+                'custom_parameter_7': 'user_browser',
+                'custom_parameter_8': 'user_os',
+                'custom_parameter_9': 'user_country'
+            }
+        });
+    }
+    
+    // Track user identification event
+    trackEvent('user_identification', 'User', 'User Identified', `User: ${userId}`, 1);
+}
+
+function getUserId() {
+    // Check if user ID exists in localStorage
+    let userId = localStorage.getItem('portfolio_user_id');
+    
+    if (!userId) {
+        // Generate new user ID
+        userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('portfolio_user_id', userId);
+    }
+    
+    return userId;
+}
+
+function getSessionId() {
+    // Check if session ID exists in sessionStorage
+    let sessionId = sessionStorage.getItem('portfolio_session_id');
+    
+    if (!sessionId) {
+        // Generate new session ID
+        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        sessionStorage.setItem('portfolio_session_id', sessionId);
+    }
+    
+    return sessionId;
+}
+
+function getTrafficSource() {
+    const referrer = document.referrer;
+    if (!referrer) return 'direct';
+    if (referrer.includes('google')) return 'google';
+    if (referrer.includes('linkedin')) return 'linkedin';
+    if (referrer.includes('github')) return 'github';
+    return 'other';
+}
+
+function getDeviceType() {
+    const width = window.innerWidth;
+    if (width < 768) return 'mobile';
+    if (width < 1024) return 'tablet';
+    return 'desktop';
+}
+
+function getBrowserInfo() {
+    const userAgent = navigator.userAgent;
+    if (userAgent.includes('Chrome')) return 'Chrome';
+    if (userAgent.includes('Firefox')) return 'Firefox';
+    if (userAgent.includes('Safari')) return 'Safari';
+    if (userAgent.includes('Edge')) return 'Edge';
+    return 'Other';
+}
+
+function getOperatingSystem() {
+    const userAgent = navigator.userAgent;
+    if (userAgent.includes('Windows')) return 'Windows';
+    if (userAgent.includes('Mac')) return 'macOS';
+    if (userAgent.includes('Linux')) return 'Linux';
+    if (userAgent.includes('Android')) return 'Android';
+    if (userAgent.includes('iOS')) return 'iOS';
+    return 'Other';
+}
+
+async function getCountry() {
+    try {
+        // Try to get country from IP geolocation API
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        return data.country_name || data.country_code || 'Unknown';
+    } catch (error) {
+        // Fallback to timezone-based country detection
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const countryMap = {
+            'America/New_York': 'United States',
+            'America/Chicago': 'United States',
+            'America/Denver': 'United States',
+            'America/Los_Angeles': 'United States',
+            'Europe/London': 'United Kingdom',
+            'Europe/Paris': 'France',
+            'Europe/Berlin': 'Germany',
+            'Europe/Rome': 'Italy',
+            'Europe/Madrid': 'Spain',
+            'Europe/Amsterdam': 'Netherlands',
+            'Europe/Brussels': 'Belgium',
+            'Europe/Zurich': 'Switzerland',
+            'Europe/Vienna': 'Austria',
+            'Europe/Stockholm': 'Sweden',
+            'Europe/Oslo': 'Norway',
+            'Europe/Copenhagen': 'Denmark',
+            'Europe/Helsinki': 'Finland',
+            'Europe/Warsaw': 'Poland',
+            'Europe/Prague': 'Czech Republic',
+            'Europe/Budapest': 'Hungary',
+            'Europe/Bucharest': 'Romania',
+            'Europe/Sofia': 'Bulgaria',
+            'Europe/Athens': 'Greece',
+            'Europe/Lisbon': 'Portugal',
+            'Europe/Dublin': 'Ireland',
+            'Asia/Tokyo': 'Japan',
+            'Asia/Shanghai': 'China',
+            'Asia/Seoul': 'South Korea',
+            'Asia/Singapore': 'Singapore',
+            'Asia/Hong_Kong': 'Hong Kong',
+            'Asia/Taipei': 'Taiwan',
+            'Asia/Bangkok': 'Thailand',
+            'Asia/Jakarta': 'Indonesia',
+            'Asia/Kuala_Lumpur': 'Malaysia',
+            'Asia/Manila': 'Philippines',
+            'Asia/Ho_Chi_Minh': 'Vietnam',
+            'Asia/Kolkata': 'India',
+            'Asia/Dubai': 'United Arab Emirates',
+            'Asia/Riyadh': 'Saudi Arabia',
+            'Asia/Tehran': 'Iran',
+            'Asia/Jerusalem': 'Israel',
+            'Asia/Istanbul': 'Turkey',
+            'Africa/Cairo': 'Egypt',
+            'Africa/Johannesburg': 'South Africa',
+            'Africa/Lagos': 'Nigeria',
+            'Africa/Casablanca': 'Morocco',
+            'Africa/Tunis': 'Tunisia',
+            'Africa/Algiers': 'Algeria',
+            'Australia/Sydney': 'Australia',
+            'Australia/Melbourne': 'Australia',
+            'Australia/Perth': 'Australia',
+            'Pacific/Auckland': 'New Zealand',
+            'America/Toronto': 'Canada',
+            'America/Vancouver': 'Canada',
+            'America/Montreal': 'Canada',
+            'America/Sao_Paulo': 'Brazil',
+            'America/Argentina/Buenos_Aires': 'Argentina',
+            'America/Mexico_City': 'Mexico',
+            'America/Bogota': 'Colombia',
+            'America/Lima': 'Peru',
+            'America/Santiago': 'Chile',
+            'America/Caracas': 'Venezuela'
+        };
+        
+        return countryMap[timezone] || 'Unknown';
     }
 }
 
